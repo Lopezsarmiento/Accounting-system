@@ -7,6 +7,7 @@ const router = express.Router();
 // modules
 const { createId } = require("../utils/utils");
 const { validateTransaction } = require("../models/transactions");
+const { strings } = require("../constants/constants");
 
 // state/db
 const state = {
@@ -15,12 +16,18 @@ const state = {
 };
 
 // routes
-// @Description: Add transacions
+// @Description: Add transactions
 // @Route: POST /api/v1/transactions
+// @Required data: type: string e.g([debit, credit]), amount
 router.post("/", (req, res) => {
   // validate payload
   const { error } = validateTransaction(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) {
+    return res
+      .status(400)
+      .json({ success: false, message: error.details[0].message });
+  }
+
   // destructure payload
   const { type, amount } = req.body;
 
@@ -29,15 +36,15 @@ router.post("/", (req, res) => {
   if (!isAllowed) {
     return res
       .status(417)
-      .json({ success: false, message: "insufficient funds" });
+      .json({ success: false, message: strings.insufficientFunds });
   }
 
-  // new transaction
+  // build new transaction
   const newTransaction = {
     id: createId(),
     type,
     amount,
-    effectiveDate: new Date().toDateString(),
+    effectiveDate: new Date(),
   };
 
   // add new transaction to history
@@ -48,14 +55,50 @@ router.post("/", (req, res) => {
 
   return res.status(200).json({
     success: true,
+    data: newTransaction,
+  });
+});
+
+// @Description: Get all transactions
+// @Route: GET /api/v1/transactions
+router.get("/", (req, res) => {
+  // Return response to client
+  return res.status(200).json({
+    success: true,
+    count: state.transactionsHistory.length,
     data: state,
+  });
+});
+
+// @Description: Get transaction by id
+// @Route: GET /api/v1/transactions/:transactionId
+router.get("/:transactionId", (req, res) => {
+  // validate id
+  if (!req.params.transactionId) {
+    return { Error: "Missing required id" };
+  }
+
+  // get specific transaction
+  const found = state.transactionsHistory.find(
+    (element) => element.id == req.params.transactionId
+  );
+
+  if (!found) {
+    return res
+      .status(404)
+      .json({ success: false, message: "No transaction found" });
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: found,
   });
 });
 
 // private functions
 const allowTransaction = (type, amount, balance) => {
   // validate balance
-  if (type === "debit") {
+  if (type === strings.debit) {
     return balance - parseInt(amount) >= 0 ? true : false;
   }
   return true;
@@ -63,7 +106,9 @@ const allowTransaction = (type, amount, balance) => {
 
 const updateBalance = (type, amount) => {
   state.balance =
-    type === "credit" ? (state.balance += amount) : (state.balance -= amount);
+    type === strings.credit
+      ? (state.balance += amount)
+      : (state.balance -= amount);
 };
 
 // export modules

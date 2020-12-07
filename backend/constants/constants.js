@@ -13,6 +13,7 @@ constants.routers = {
 constants.strings = {
   credit: "credit",
   debit: "debit",
+  insufficientFunds: "insufficient funds",
 };
 
 module.exports = constants;
