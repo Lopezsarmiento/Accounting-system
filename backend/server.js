@@ -9,7 +9,6 @@ var bodyParser = require("body-parser");
 
 // modules
 const { routers } = require("./constants/constants");
-const homeRouter = require("./routes/home");
 const transactionsRouter = require("./routes/transactions");
 
 // Retrieve values from config
@@ -27,9 +26,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
-app.use(routers.home, homeRouter);
 app.use(routers.transactions, transactionsRouter);
 
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("../client/build"));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  });
+}
 const PORT = process.env.PORT || 4001;
 
 app.listen(PORT, () => {

@@ -35,24 +35,20 @@ const fetchTransactions = async () => {
 const TransactionsList = () => {
   // custom hook for data fetching and manage state
   const { data , status } = useQuery('transactions', fetchTransactions);
-  console.log("data: ", data);
-
-
-
-
   return (
     <React.Fragment>
-      { status === 'loading' && (<div>Cargando datos...</div>)}
-      { status === 'error' && (<div>Error al buscar datos...</div>)}
+      { status === 'loading' && (<div>Loading data...</div>)}
+      { status === 'error' && (<div>Error while retrieving data.</div>)}
+      { status === 'success' && data.length === 0 && (<div>No transactions found.</div>)}
       { status === 'success' && (
         <Accordion>
-          { data && data.map( item =>
+          { data && data.map( (item, index) =>
           <Card key={item.id}>
-            <Accordion.Toggle as={Card.Header} variant="link" eventKey="0">
+            <Accordion.Toggle as={Card.Header} variant="link" eventKey={item.id}>
               <p>Type: {item.type}</p>
               <p>Amount: ${item.amount}</p>
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey="0">
+            <Accordion.Collapse eventKey={item.id}>
               <Card.Body>
                 <p>Type: {item.type}</p>
                 <p>Amount: ${item.amount}</p>
