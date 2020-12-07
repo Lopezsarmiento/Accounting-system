@@ -66,7 +66,7 @@ router.get("/", (req, res) => {
   return res.status(200).json({
     success: true,
     count: state.transactionsHistory.length,
-    data: state,
+    data: state.transactionsHistory,
   });
 });
 
