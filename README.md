@@ -78,7 +78,7 @@ http code 400
 
 ### Request
 
-    GET http://localhost:4000/api/v1/appointments/:id
+    GET http://localhost:4000/api/v1/transactions/:id
     Content-Type: application/json
 
 ### Response
